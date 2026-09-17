@@ -128,10 +128,9 @@ describe('App Component and Navigation Suite', () => {
   });
 
   it('shows copy and Explorer actions whenever a transaction hash exists', () => {
-    vi.spyOn(configModule, 'getExplorerTxUrl').mockReturnValue(`https://explorer.example/tx/0x${'a'.repeat(64)}`);
     render(<TransactionProgress stage="SUCCESS" error={null} hash={`0x${'a'.repeat(64)}`} />);
     expect(screen.getByRole('button', { name: 'Copy hash' })).toBeInTheDocument();
-    expect(screen.getByRole('link', { name: 'View transaction' })).toHaveAttribute('href', expect.stringContaining(`/tx/0x${'a'.repeat(64)}`));
+    expect(screen.getByRole('link', { name: 'View transaction' })).toHaveAttribute('href', `https://explorer-studio-dev.genlayer.com/tx/0x${'a'.repeat(64)}`);
   });
 
   it('shows honest loading copy instead of a premature UNASSESSED verdict', () => {

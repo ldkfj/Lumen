@@ -1,5 +1,6 @@
 import { createClient } from 'genlayer-js';
 import { studioDevnet } from 'genlayer-js/chains';
+import { studioDevnetExplorerUrl } from './config';
 
 export interface EIP1193Provider {
   request(args: { method: string; params?: unknown[] | Record<string, unknown> }): Promise<unknown>;
@@ -222,7 +223,7 @@ export class WalletManager {
               chainName: studioDevnet.name,
               rpcUrls: [studioDevnet.rpcUrls.default.http[0]],
               nativeCurrency: studioDevnet.nativeCurrency,
-              blockExplorerUrls: studioDevnet.blockExplorers ? [studioDevnet.blockExplorers.default.url] : [],
+              blockExplorerUrls: [studioDevnet.blockExplorers?.default?.url || studioDevnetExplorerUrl],
             },
           ],
         });

@@ -36,16 +36,23 @@ export const chainInfo = {
   blockExplorers: studioDevnet.blockExplorers,
 };
 
+export const studioDevnetExplorerUrl = 'https://explorer-studio-dev.genlayer.com';
+
+function getExplorerBaseUrl(): string | null {
+  if (studioDevnet.id !== 61997) return null;
+  return studioDevnet.blockExplorers?.default?.url || studioDevnetExplorerUrl;
+}
+
 export function getExplorerTxUrl(txHash?: string): string | null {
   if (!txHash) return null;
-  const baseUrl = studioDevnet.blockExplorers?.default?.url;
+  const baseUrl = getExplorerBaseUrl();
   if (!baseUrl) return null;
   return `${baseUrl.replace(/\/$/, '')}/tx/${txHash}`;
 }
 
 export function getExplorerAddressUrl(address?: string): string | null {
   if (!address) return null;
-  const baseUrl = studioDevnet.blockExplorers?.default?.url;
+  const baseUrl = getExplorerBaseUrl();
   if (!baseUrl) return null;
   return `${baseUrl.replace(/\/$/, '')}/address/${address}`;
 }
