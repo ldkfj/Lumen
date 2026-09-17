@@ -81,6 +81,10 @@ const COMMIT_REGEX = /^[0-9a-f]{40}$/;
 const RESULT_ID_REGEX = /^6\.0-[0-9]{4}$/;
 const HASH_REGEX = /^0x[0-9a-fA-F]{64}$/;
 
+export function waitForWalletUiReady(): Promise<void> {
+  return new Promise((resolve) => setTimeout(resolve, 0));
+}
+
 export function validateTransactionHash(hash: string): TransactionHash {
   const clean = hash.trim();
   if (!HASH_REGEX.test(clean)) {
@@ -636,6 +640,7 @@ export async function executeContractWrite(
   }
   walletRequestStarted = true;
   onStageChange('WAITING_FOR_WALLET');
+  await waitForWalletUiReady();
   let rawWriteResult: unknown;
   try {
     rawWriteResult = await writeClient.writeContract({

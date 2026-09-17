@@ -19,6 +19,7 @@ import {
   verifyAndReadbackRecord,
   processTransactionFinalityAndReadback,
   executeContractWrite,
+  waitForWalletUiReady,
   PendingOperation,
   normalizeSourceUrl,
 } from './transaction';
@@ -278,6 +279,19 @@ describe('Strict Contract JSON Parsing Suite', () => {
 });
 
 describe('Transaction Hash & URL Normalization', () => {
+  it('yields one browser task so the wallet-wait UI can render before provider invocation', async () => {
+    vi.useFakeTimers();
+    let resolved = false;
+    const pending = waitForWalletUiReady().then(() => { resolved = true; });
+
+    await Promise.resolve();
+    expect(resolved).toBe(false);
+    await vi.runAllTimersAsync();
+    await pending;
+    expect(resolved).toBe(true);
+    vi.useRealTimers();
+  });
+
   it('validates 66-character TransactionHash strictly', () => {
     const validHash = ('0x' + 'f'.repeat(64)) as TransactionHash;
     expect(validateTransactionHash(validHash)).toBe(validHash);

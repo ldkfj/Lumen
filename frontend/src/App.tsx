@@ -89,9 +89,10 @@ function useFeeReview() {
     setQuote(next);
   });
   const decide = (approved: boolean) => {
-    resolver.current?.(approved);
+    const resolve = resolver.current;
     resolver.current = null;
     setQuote(null);
+    resolve?.(approved);
   };
   return { quote, request, decide };
 }
