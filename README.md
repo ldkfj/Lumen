@@ -24,7 +24,7 @@ Exact release, result, commit, byte range, and row identity are deterministic. T
 ## How it works
 
 1. Anyone can browse claims and assessments without connecting a wallet.
-2. A registrant connects a chosen wallet provider, locates one official MLPerf row, reviews the protocol fee, signs, and registers the exact public claim and evidence binding.
+2. A registrant connects a chosen wallet provider, locates one official MLPerf row, selects the write action, reviews the request in the wallet, signs, and registers the exact public claim and evidence binding.
 3. A verifier opens the registered claim, reviews the same bound row, signs an assessment request, and waits for consensus and authoritative readback.
 4. If MLCommons publishes a strictly newer commit, a challenger can locate the same row identity there and request reassessment. Equal or older revisions are rejected.
 
@@ -40,7 +40,7 @@ The three write methods are `register_claim`, `assess_claim`, and `request_reass
 
 ## Transaction lifecycle
 
-Every write follows provider selection, account request, fee review, wallet signature, submission, finality, execution verification, and authoritative readback. Success requires `FINALIZED`, `MAJORITY_AGREE`, `FINISHED_WITH_RETURN`, correct sender and target, and the expected state change. A durable operation lock prevents blind resubmission; timeouts or missing execution data remain recoverable and never display success.
+Every write follows provider selection, account request, wallet fee disclosure and signature, submission, finality, execution verification, and authoritative readback. Success requires `FINALIZED`, `MAJORITY_AGREE`, `FINISHED_WITH_RETURN`, correct sender and target, and the expected state change. A durable operation lock prevents blind resubmission; timeouts or missing execution data remain recoverable and never display success.
 
 ## Project structure
 

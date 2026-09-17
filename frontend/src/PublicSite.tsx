@@ -7,7 +7,7 @@ function PublicHeader() {
       <a className="public-skip" href="#public-main">Skip to content</a>
       <div className="public-header-inner">
         <Link className="public-brand" to="/" aria-label="Lumen home">
-          <img src="/lumen-mark.png" alt="" />
+          <img src="/lumen-mark.png" alt="" width="46" height="46" />
           <span>LUMEN</span>
         </Link>
         <nav aria-label="Public navigation">
@@ -32,7 +32,7 @@ function PublicFooter() {
           <Link to="/app">Verification app</Link>
           <a href="https://docs.genlayer.com/developers" target="_blank" rel="noreferrer">GenLayer docs ↗</a>
         </nav>
-        <span className="public-built"><img src="/genlayer-mark.svg" alt="" /> Built on GenLayer</span>
+        <span className="public-built"><img src="/genlayer-mark.svg" alt="" width="16" height="16" /> Built on GenLayer</span>
       </div>
     </footer>
   );
@@ -51,7 +51,7 @@ export function PublicLanding() {
       <PublicHeader />
       <main id="public-main">
         <section className="public-hero" aria-labelledby="hero-heading">
-          <div className="public-watermark" aria-hidden="true"><img src="/genlayer-mark.svg" alt="" /></div>
+          <div className="public-watermark" aria-hidden="true"><img src="/genlayer-mark.svg" alt="" width="98" height="92" /></div>
           <div className="public-hero-copy">
             <p className="public-eyebrow">Trust AI performance</p>
             <h1 id="hero-heading">Make AI benchmark claims <em>prove their scope.</em></h1>
@@ -101,7 +101,7 @@ export function PublicDocs() {
         <nav className="public-docs-nav" aria-label="Documentation sections"><a href="#evidence">Evidence</a><a href="#journey">Using the app</a><a href="#outcomes">Outcomes</a><a href="#limitations">Limits</a></nav>
         <div className="public-docs-body">
           <section id="evidence"><p className="public-eyebrow">01 / Evidence</p><h2>Two sources, one bounded question.</h2><p>Registration supplies a public HTTPS claim URL and the exact text visible there. The official side is one MLPerf Inference v6.0 result ID at a specific commit of <code>mlcommons/inference_results_v6.0</code>, with an exact row slice of <code>summary_results.json</code>.</p><p>The contract checks source containment, commit lineage, row identity and configuration, then records fingerprints. A registrant does not gain vendor ownership or authority by registering a claim.</p></section>
-          <section id="journey"><p className="public-eyebrow">02 / Journey</p><h2>Use Lumen.</h2><ol><li>Open the verification app and select <strong>Connect wallet</strong> if you intend to submit a write. Choose a provider explicitly, approve its account request, and switch to Studio Devnet when prompted.</li><li>To register, enter the public source URL, exact claim wording, official result ID and commit. Locate the official row, inspect its system/model/scenario, and explicitly choose a row when the ID has multiple matches.</li><li>Review the transaction fee and details in your wallet, sign, and wait for consensus and finality. Lumen confirms execution and reads the resulting contract record back before reporting success.</li><li>Open a claim to trigger assessment, inspect its exact evidence and history, or request reassessment against a strictly newer official commit. A timeout can be resumed from the recorded transaction hash; do not submit the same write blindly.</li></ol><p>Readers can browse the registry and individual claims without connecting a wallet.</p></section>
+          <section id="journey"><p className="public-eyebrow">02 / Journey</p><h2>Use Lumen.</h2><ol><li>Open the verification app and select <strong>Connect wallet</strong> if you intend to submit a write. Choose a provider explicitly, approve its account request, and switch to Studio Devnet when prompted.</li><li>To register, enter the public source URL, exact claim wording, official result ID and commit. Locate the official row, inspect its system/model/scenario, and explicitly choose a row when the ID has multiple matches.</li><li>Select the write action, review the transaction fee and details in your wallet, sign, and wait for consensus and finality. Lumen confirms execution and reads the resulting contract record back before reporting success.</li><li>Open a claim to trigger assessment, inspect its exact evidence and history, or request reassessment against a strictly newer official commit. A timeout can be resumed from the recorded transaction hash; do not submit the same write blindly.</li></ol><p>Readers can browse the registry and individual claims without connecting a wallet.</p></section>
           <section id="outcomes"><p className="public-eyebrow">03 / Consequence</p><h2>Five outcomes, no browser verdict.</h2><dl><div><dt>SUPPORTED</dt><dd>The cited row supports the frozen wording as assessed.</dd></div><div><dt>QUALIFICATION_REQUIRED</dt><dd>Relevant restrictions must accompany the statement.</dd></div><div><dt>OVERSTATED</dt><dd>The statement materially exceeds what the result supports.</dd></div><div><dt>NOT_COMPARABLE</dt><dd>The row and claimed comparison do not share a valid scope.</dd></div><div><dt>UNRESOLVED</dt><dd>Evidence or semantic agreement is insufficient for a conclusive badge.</dd></div></dl><p>Contract masks and fixed precedence determine the badge. Explanatory prose cannot change it.</p></section>
           <section id="limitations"><p className="public-eyebrow">04 / Limits</p><h2>One result is not a universal ranking.</h2><p>Lumen does not rerun a benchmark, certify general quality, prove vendor ownership, or validate private and vendor-created benchmarks. It does not infer multi-result superlatives from a single row. Dynamic source pages or official corrections can make an assessment unresolved; revisions retain the previous evidence and create a new record.</p><p>Currently scoped to Studio Devnet, chain ID 61997, and MLPerf Inference v6.0. Contract interactions have protocol fees. The frontend displays contract state and never calculates or submits a verdict.</p></section>
         </div>

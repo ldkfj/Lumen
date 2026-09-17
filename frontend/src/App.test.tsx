@@ -10,6 +10,7 @@ import * as officialRowModule from './officialRow';
 import * as txModule from './transaction';
 import type { TransactionHash } from 'genlayer-js/types';
 import type { RowScanResult } from './officialRow';
+import { PublicLanding } from './PublicSite';
 
 describe('App Component and Navigation Suite', () => {
   beforeEach(() => {
@@ -124,6 +125,32 @@ describe('App Component and Navigation Suite', () => {
   it('renders no transaction region while idle', () => {
     const { container } = render(<TransactionProgress stage="IDLE" error={null} hash={null} />);
     expect(container.querySelector('[data-transaction-phase]')).not.toBeInTheDocument();
+  });
+
+  it('shows copy and Explorer actions whenever a transaction hash exists', () => {
+    vi.spyOn(configModule, 'getExplorerTxUrl').mockReturnValue(`https://explorer.example/tx/0x${'a'.repeat(64)}`);
+    render(<TransactionProgress stage="SUCCESS" error={null} hash={`0x${'a'.repeat(64)}`} />);
+    expect(screen.getByRole('button', { name: 'Copy hash' })).toBeInTheDocument();
+    expect(screen.getByRole('link', { name: 'View transaction' })).toHaveAttribute('href', expect.stringContaining(`/tx/0x${'a'.repeat(64)}`));
+  });
+
+  it('shows honest loading copy instead of a premature UNASSESSED verdict', () => {
+    render(
+      <MemoryRouter>
+        <RegistryPage claims={[sampleClaim]} latestAssessments={new Map()} onLoadMore={() => {}} nextCursor={null} loading={true} />
+      </MemoryRouter>
+    );
+    expect(screen.getByText('Loading records…')).toBeInTheDocument();
+    expect(screen.getByText('CHECKING')).toBeInTheDocument();
+    expect(screen.queryByText('UNASSESSED')).not.toBeInTheDocument();
+  });
+
+  it('declares intrinsic dimensions for public brand images', () => {
+    const { container } = render(<MemoryRouter><PublicLanding /></MemoryRouter>);
+    for (const image of Array.from(container.querySelectorAll('img'))) {
+      expect(image).toHaveAttribute('width');
+      expect(image).toHaveAttribute('height');
+    }
   });
 
   it('does not request wallet access on read-only route views', () => {
@@ -332,6 +359,19 @@ describe('App Component and Navigation Suite', () => {
     expect(commitInput).toHaveValue('');
     fireEvent.change(commitInput, { target: { value: 'a'.repeat(40) } });
     expect(screen.queryByText(/2\. Register claim on Studio Devnet/i)).not.toBeInTheDocument();
+  });
+
+  it('blocks non-HTTPS source URLs before scanning official evidence', async () => {
+    const locateSpy = vi.spyOn(officialRowModule, 'locateOfficialRows');
+    render(<MemoryRouter><RegisterPage /></MemoryRouter>);
+
+    fireEvent.change(screen.getByLabelText(/Public Source HTTPS URL/i), { target: { value: 'http://example.com/claim' } });
+    fireEvent.change(screen.getByLabelText(/Exact Frozen Claim Text/i), { target: { value: 'Exact public claim' } });
+    fireEvent.change(screen.getByLabelText(/Official Repository Commit SHA/i), { target: { value: 'a'.repeat(40) } });
+    fireEvent.click(screen.getByRole('button', { name: /Locate official row/i }));
+
+    expect(await screen.findByText('Source URL must use HTTPS.')).toHaveAttribute('role', 'alert');
+    expect(locateSpy).not.toHaveBeenCalled();
   });
 
   it('blocks duplicate-ID registration until the user explicitly selects a row', async () => {

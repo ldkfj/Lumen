@@ -25,6 +25,7 @@ import {
   processTransactionFinalityAndReadback,
   PendingOperation,
   FeeQuote,
+  normalizeSourceUrl,
 } from './transaction';
 
 // --- Helper Functions ---
@@ -66,6 +67,8 @@ const TX_COPY: Record<TxStage, { title: string; detail: string }> = {
 };
 
 export function TransactionProgress({ stage, error, hash }: { stage: TxStage; error: string | null; hash: string | null }) {
+  const [copiedHash, setCopiedHash] = useState(false);
+  useEffect(() => setCopiedHash(false), [hash]);
   if (stage === 'IDLE') return null;
   const pending = isTxBusy(stage);
   const alert = stage === 'FAILED' || stage === 'REJECTED';
@@ -76,48 +79,23 @@ export function TransactionProgress({ stage, error, hash }: { stage: TxStage; er
         {pending && <span className="transaction-progress__spinner" aria-hidden="true" />}
         <div><strong>{copy.title}</strong><p>{error || copy.detail}</p></div>
       </div>
-      {hash && <div className="transaction-progress__hash"><span>Transaction hash</span><code>{hash}</code>{getExplorerTxUrl(hash) && <a href={getExplorerTxUrl(hash)!} target="_blank" rel="noreferrer">View transaction</a>}</div>}
+      {hash && <div className="transaction-progress__hash"><span>Transaction hash</span><code>{hash}</code><div className="transaction-progress__actions"><button type="button" className="btn btn-secondary" onClick={() => copyToClipboard(hash, () => setCopiedHash(true))}>{copiedHash ? 'Copied' : 'Copy hash'}</button>{getExplorerTxUrl(hash) && <a className="btn btn-secondary" href={getExplorerTxUrl(hash)!} target="_blank" rel="noreferrer">View transaction</a>}</div></div>}
     </section>
   );
 }
 
-function useFeeReview() {
+function useFeeDisclosure() {
   const [quote, setQuote] = useState<FeeQuote | null>(null);
-  const resolver = useRef<((approved: boolean) => void) | null>(null);
-  const request = (next: FeeQuote) => new Promise<boolean>((resolve) => {
-    resolver.current = resolve;
+  const approve = (next: FeeQuote) => {
     setQuote(next);
-  });
-  const decide = (approved: boolean) => {
-    const resolve = resolver.current;
-    resolver.current = null;
-    setQuote(null);
-    resolve?.(approved);
+    return Promise.resolve(true);
   };
-  return { quote, request, decide };
+  return { quote, approve };
 }
 
-function FeeReviewDialog({ quote, onDecision }: { quote: FeeQuote | null; onDecision: (approved: boolean) => void }) {
-  const dialogRef = useRef<HTMLDialogElement>(null);
-  useEffect(() => {
-    const dialog = dialogRef.current;
-    if (!dialog) return;
-    if (quote && !dialog.open) dialog.showModal();
-    if (!quote && dialog.open) dialog.close();
-  }, [quote]);
-  return (
-    <dialog ref={dialogRef} aria-labelledby="fee-review-title" onCancel={(event) => { event.preventDefault(); onDecision(false); }}>
-      <div className="dialog-header"><h2 id="fee-review-title">Review protocol fee</h2></div>
-      {quote && <>
-        <p className="fee-total">Maximum wallet fee deposit <strong>{formatGen(quote.feeValue)}</strong></p>
-        <p className="form-helper">Estimated from the verified fee profile and current Studio Devnet policy. Unused fee is settled by the protocol; no GEN is sent to this non-payable contract.</p>
-        <div className="fee-actions">
-          <button type="button" className="btn btn-secondary" onClick={() => onDecision(false)}>Cancel</button>
-          <button type="button" className="btn btn-primary" onClick={() => onDecision(true)}>Continue to wallet signature</button>
-        </div>
-      </>}
-    </dialog>
-  );
+function FeeDisclosure({ quote }: { quote: FeeQuote | null }) {
+  if (!quote) return null;
+  return <p className="fee-disclosure" role="status">Maximum wallet fee deposit: <strong>{formatGen(quote.feeValue)}</strong>. Review the exact request in your wallet; unused fees are settled by the protocol.</p>;
 }
 
 // --- App Navigation Header ---
@@ -538,7 +516,7 @@ export function RegistryPage({
     <div className="registry-section">
       <div className="registry-header">
         <h1>Official Claims Registry</h1>
-        <span className="registry-count">{claims.length} records loaded</span>
+        <span className="registry-count">{loading ? 'Loading records…' : `${claims.length} records loaded`}</span>
       </div>
 
       {contractConfig.status !== 'configured' && (
@@ -550,7 +528,9 @@ export function RegistryPage({
         </div>
       )}
 
-      {claims.length === 0 && !loading ? (
+      {claims.length === 0 && loading ? (
+        <div style={{ padding: '32px', textAlign: 'center', color: 'var(--muted)' }}>Loading claims…</div>
+      ) : claims.length === 0 ? (
         <div style={{ padding: '32px', textAlign: 'center', color: 'var(--muted)' }}>
           No claims have been registered on this contract deployment yet.
         </div>
@@ -558,13 +538,14 @@ export function RegistryPage({
         <div className="registry-table">
           {claims.map((claim) => {
             const latestInfo = latestAssessments.get(claim.id);
-            const verdict: Outcome =
-              latestInfo?.latest_resolved?.outcome || latestInfo?.latest_attempt?.outcome || 'UNASSESSED';
+            const verdict: Outcome | null = latestInfo
+              ? latestInfo.latest_resolved?.outcome || latestInfo.latest_attempt?.outcome || 'UNASSESSED'
+              : loading ? null : 'UNASSESSED';
 
             return (
               <Link key={claim.id} to={`/app/claims/${claim.id}`} className="registry-row">
                 <div>
-                  <span className={`verdict-badge ${verdict}`}>{verdict}</span>
+                  <span className={`verdict-badge ${verdict || 'UNASSESSED'}`}>{verdict || 'CHECKING'}</span>
                   <div style={{ fontSize: '0.75rem', color: 'var(--muted)', marginTop: '4px' }}>
                     Claim #{claim.id}
                   </div>
@@ -611,7 +592,7 @@ export function RegistryPage({
 
 // --- Page: Register Claim (`/register`) ---
 export function RegisterPage() {
-  const feeReview = useFeeReview();
+  const feeDisclosure = useFeeDisclosure();
   const [sourceUrl, setSourceUrl] = useState('');
   const [claimText, setClaimText] = useState('');
   const [resultId, setResultId] = useState('6.0-0001');
@@ -649,6 +630,10 @@ export function RegisterPage() {
     setScanResult(null);
     setScanMatches([]);
     try {
+      normalizeSourceUrl(sourceUrl.trim());
+      const frozenText = claimText.trim();
+      if (!frozenText || frozenText.length > 2000) throw new Error('Claim text must contain 1-2000 characters.');
+      if (!/^(0|[1-9][0-9]*)$/.test(supersedesId.trim() || '0')) throw new Error('Supersedes Claim ID must be a non-negative integer.');
       const matches = await locateOfficialRows(commitSha, resultId);
       setScanMatches(matches);
       setScanResult(matches.length === 1 ? matches[0] : null);
@@ -690,7 +675,7 @@ export function RegisterPage() {
           if (err) setTxError(err);
           if (hash) setTxHash(hash);
         },
-        feeReview.request
+        feeDisclosure.approve
       );
       setTxHash(res.txHash);
       setCreatedClaimId(res.recordId);
@@ -701,7 +686,6 @@ export function RegisterPage() {
 
   return (
     <div style={{ maxWidth: '800px', margin: '0 auto' }}>
-      <FeeReviewDialog quote={feeReview.quote} onDecision={feeReview.decide} />
       <h1 style={{ marginBottom: '16px' }}>Register Performance Claim</h1>
       <p style={{ color: 'var(--muted)', marginBottom: '24px' }}>
         Submit a frozen public marketing claim and cite an exact official MLPerf Inference v6.0 result row.
@@ -716,6 +700,7 @@ export function RegisterPage() {
       )}
 
       <TransactionProgress stage={txStage} error={txError} hash={txHash} />
+      <FeeDisclosure quote={feeDisclosure.quote} />
       {createdClaimId && (
         <div style={{ marginBottom: '24px' }}>
           <Link to={`/app/claims/${createdClaimId}`} className="btn btn-primary" style={{ display: 'inline-flex' }}>
@@ -871,7 +856,7 @@ export function ClaimDetailPage({
   resumeError?: string | null;
   resumeHash?: string | null;
 } = {}) {
-  const feeReview = useFeeReview();
+  const feeDisclosure = useFeeDisclosure();
   const { claimId } = useParams<{ claimId: string }>();
   const [claim, setClaim] = useState<ClaimRecord | null>(null);
   const [latestInfo, setLatestInfo] = useState<LatestAssessmentResponse | null>(null);
@@ -944,7 +929,7 @@ export function ClaimDetailPage({
           if (err) setTxError(err);
           if (hash) setTxHash(hash);
         },
-        feeReview.request
+        feeDisclosure.approve
       );
       // Reload details after success
       const idBigInt = BigInt(claim.id);
@@ -1012,7 +997,7 @@ export function ClaimDetailPage({
           if (err) setTxError(err);
           if (hash) setTxHash(hash);
         },
-        feeReview.request
+        feeDisclosure.approve
       );
       // Reload details
       const idBigInt = BigInt(claim.id);
@@ -1062,7 +1047,6 @@ export function ClaimDetailPage({
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '32px' }}>
-      <FeeReviewDialog quote={feeReview.quote} onDecision={feeReview.decide} />
       <div>
         <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '8px' }}>
           <span className={`verdict-badge ${displayedVerdict}`}>{displayedVerdict}</span>
@@ -1246,6 +1230,7 @@ export function ClaimDetailPage({
 
       <div data-transaction-slot="claim-actions">
         <TransactionProgress stage={displayedTxStage} error={displayedTxError} hash={displayedTxHash} />
+        <FeeDisclosure quote={feeDisclosure.quote} />
       </div>
 
       {/* Revision Assessment History */}

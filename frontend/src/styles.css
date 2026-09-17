@@ -868,6 +868,18 @@ dialog::backdrop {
   overflow-wrap: anywhere;
 }
 
+.transaction-progress__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.fee-disclosure {
+  margin: 0 0 24px;
+  color: var(--muted);
+  font-size: 0.85rem;
+}
+
 @keyframes transaction-progress-spin {
   to { transform: rotate(360deg); }
 }
