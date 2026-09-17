@@ -862,7 +862,15 @@ export function RegisterPage() {
 }
 
 // --- Page: Claim Detail & Revision History (`/claims/:claimId`) ---
-export function ClaimDetailPage() {
+export function ClaimDetailPage({
+  resumeStage = 'IDLE',
+  resumeError = null,
+  resumeHash = null,
+}: {
+  resumeStage?: TxStage;
+  resumeError?: string | null;
+  resumeHash?: string | null;
+} = {}) {
   const feeReview = useFeeReview();
   const { claimId } = useParams<{ claimId: string }>();
   const [claim, setClaim] = useState<ClaimRecord | null>(null);
@@ -1048,6 +1056,9 @@ export function ClaimDetailPage() {
     ? decodeMask(activeAssessment.incompatible_scope_mask, INCOMPATIBLE_SCOPE_KEYS)
     : [];
   const uncertainties = activeAssessment ? decodeMask(activeAssessment.uncertainty_mask, UNCERTAINTY_KEYS) : [];
+  const displayedTxStage = txStage === 'IDLE' ? resumeStage : txStage;
+  const displayedTxError = txStage === 'IDLE' ? resumeError : txError;
+  const displayedTxHash = txStage === 'IDLE' ? resumeHash : txHash;
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '32px' }}>
@@ -1070,8 +1081,6 @@ export function ClaimDetailPage() {
           Registrant: <span className="mono">{claim.registrant}</span> (Registration does not establish vendor ownership or authorization).
         </div>
       </div>
-
-      <TransactionProgress stage={txStage} error={txError} hash={txHash} />
 
       {/* Semantic Mismatch & Verdict Explanations */}
       {activeAssessment && (
@@ -1235,6 +1244,10 @@ export function ClaimDetailPage() {
         </div>
       </div>
 
+      <div data-transaction-slot="claim-actions">
+        <TransactionProgress stage={displayedTxStage} error={displayedTxError} hash={displayedTxHash} />
+      </div>
+
       {/* Revision Assessment History */}
       <section className="form-card" aria-label="Assessment History">
         <h2>Assessment History</h2>
@@ -1345,6 +1358,7 @@ export function NotFoundPage() {
 
 // --- Main Application Shell ---
 export function MainApp() {
+  const location = useLocation();
   const [claims, setClaims] = useState<ClaimRecord[]>([]);
   const [latestAssessments, setLatestAssessments] = useState<Map<string, LatestAssessmentResponse>>(new Map());
   const [nextCursor, setNextCursor] = useState<string | null>(null);
@@ -1488,7 +1502,9 @@ export function MainApp() {
             </div>
           </div>
         )}
-        <TransactionProgress stage={resumeStage} error={resumeError} hash={resumeHash} />
+        {!/^\/app\/claims\/[^/]+$/.test(location.pathname) && (
+          <TransactionProgress stage={resumeStage} error={resumeError} hash={resumeHash} />
+        )}
 
         <Routes>
           <Route
@@ -1504,7 +1520,10 @@ export function MainApp() {
             }
           />
           <Route path="/app/register" element={<RegisterPage />} />
-          <Route path="/app/claims/:claimId" element={<ClaimDetailPage />} />
+          <Route
+            path="/app/claims/:claimId"
+            element={<ClaimDetailPage resumeStage={resumeStage} resumeError={resumeError} resumeHash={resumeHash} />}
+          />
           <Route path="/app/about" element={<AboutPage />} />
           <Route path="*" element={<NotFoundPage />} />
         </Routes>

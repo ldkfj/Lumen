@@ -407,6 +407,29 @@ describe('App Component and Navigation Suite', () => {
     expect(screen.getByText(/Loading claim details/i)).toBeInTheDocument();
   });
 
+  it('renders one resumed transaction result in the claim actions slot', async () => {
+    vi.spyOn(genlayerModule, 'fetchClaim').mockResolvedValue(sampleClaim);
+    vi.spyOn(genlayerModule, 'fetchLatestAssessment').mockResolvedValue({ latest_attempt: null, latest_resolved: null });
+    vi.spyOn(genlayerModule, 'fetchClaimAssessments').mockResolvedValue({ cursor: '0', items: [], next_cursor: null, total: '0' });
+
+    const { container } = render(
+      <MemoryRouter initialEntries={['/claims/1']}>
+        <Routes>
+          <Route
+            path="/claims/:claimId"
+            element={<ClaimDetailPage resumeStage="SUCCESS" resumeError={null} resumeHash={`0x${'a'.repeat(64)}`} />}
+          />
+        </Routes>
+      </MemoryRouter>
+    );
+
+    await screen.findByText(/Assessment History/i);
+    expect(screen.getAllByText('Transaction complete')).toHaveLength(1);
+    expect(container.querySelector('[data-transaction-slot="claim-actions"]')).toContainElement(
+      screen.getByText('Transaction complete')
+    );
+  });
+
   it('resumes pending transaction only after user click and never calls writeContract', () => {
     const pendingOp: txModule.PendingOperation = {
       version: 2,
