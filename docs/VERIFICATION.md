@@ -35,7 +35,7 @@ GENVM_VERSION=v0.6.0-rc5 PYTHONUTF8=1 uv run --with genlayer-test==0.30.0rc2 --w
 2 passed
 
 cd frontend && npm test -- --run
-62 passed
+63 passed
 
 cd frontend && npm run typecheck
 PASS
@@ -54,6 +54,7 @@ The contract exposes 3 writes and 5 views. It is intentionally frozen: there is 
 - Landing and docs are static separate chunks and do not load the wallet workspace.
 - Responsive browser checks passed at `320`, `375`, `414`, `768`, `960`, `1440`, and `1920` CSS pixels with no horizontal overflow.
 - Read-only routes do not request accounts.
+- Identical concurrent contract reads are deduplicated through one shared in-flight request and are not retained as stale cache after settlement.
 - `Connect wallet` always opens an explicit provider chooser.
 - Writes bind to the exact selected provider and chain `61997`.
 - One durable pre-hash lock prevents double submission before the wallet response; a valid returned hash replaces it and survives reload.

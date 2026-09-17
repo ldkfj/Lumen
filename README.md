@@ -82,7 +82,7 @@ The application fails closed until `VITE_CONTRACT_ADDRESS` is set. No placeholde
 
 ## Tests and verification
 
-The verified release passed contract lint and schema validation, 10 deterministic contract tests, 2 Direct Mode tests, 62 frontend tests, TypeScript checking, production build, and production dependency audit. Exact commands, results, deployed-source parity, and live write/readback evidence are in [`docs/VERIFICATION.md`](docs/VERIFICATION.md).
+The verified release passed contract lint and schema validation, 10 deterministic contract tests, 2 Direct Mode tests, 63 frontend tests, TypeScript checking, production build, and production dependency audit. Exact commands, results, deployed-source parity, and live write/readback evidence are in [`docs/VERIFICATION.md`](docs/VERIFICATION.md).
 
 ## Deployment
 

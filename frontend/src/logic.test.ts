@@ -223,6 +223,24 @@ describe('Strict Contract JSON Parsing Suite', () => {
     expect(parsed.official_result_id).toBe('6.0-0001');
   });
 
+  it('deduplicates identical in-flight contract reads without retaining stale cache', async () => {
+    let release!: (value: string) => void;
+    const load = vi
+      .fn<() => Promise<string>>()
+      .mockImplementationOnce(() => new Promise((resolve) => { release = resolve; }))
+      .mockResolvedValueOnce('fresh');
+
+    const first = genlayerModule.dedupeInFlightRead('same-read', load);
+    const duplicate = genlayerModule.dedupeInFlightRead('same-read', load);
+    expect(load).toHaveBeenCalledTimes(1);
+
+    release('shared');
+    await expect(Promise.all([first, duplicate])).resolves.toEqual(['shared', 'shared']);
+
+    await expect(genlayerModule.dedupeInFlightRead('same-read', load)).resolves.toBe('fresh');
+    expect(load).toHaveBeenCalledTimes(2);
+  });
+
   it('rejects numeric, boolean, or malformed types in claim record fields', () => {
     const invalidId = { ...validClaim, id: 100 };
     expect(() => genlayerModule.parseClaimRecordJson(JSON.stringify(invalidId))).toThrow(/canonical unsigned decimal string/);

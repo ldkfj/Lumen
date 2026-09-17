@@ -12,6 +12,23 @@ import {
 
 export const readClient = createClient({ chain: studioDevnet });
 
+const inFlightReads = new Map<string, Promise<unknown>>();
+
+export function dedupeInFlightRead<T>(key: string, load: () => Promise<T>): Promise<T> {
+  const current = inFlightReads.get(key) as Promise<T> | undefined;
+  if (current) return current;
+
+  const pending = load().finally(() => {
+    if (inFlightReads.get(key) === pending) inFlightReads.delete(key);
+  });
+  inFlightReads.set(key, pending);
+  return pending;
+}
+
+function readKey(address: string, method: string, args: Array<bigint | number>): string {
+  return `${studioDevnet.id}:${address}:${method}:${args.map(String).join(',')}`;
+}
+
 const DECIMAL_REGEX = /^(0|[1-9][0-9]*)$/;
 const ADDRESS_REGEX = /^0x[0-9a-fA-F]{40}$/;
 const COMMIT_REGEX = /^[0-9a-f]{40}$/;
@@ -296,11 +313,14 @@ export async function fetchClaim(claimId: bigint): Promise<ClaimRecord> {
     throw new Error('Contract address is not configured.');
   }
 
-  const result = await readClient.readContract({
-    address: contractConfig.address,
-    functionName: 'get_claim',
-    args: [claimId],
-  });
+  const address = contractConfig.address;
+  const result = await dedupeInFlightRead(readKey(address.toLowerCase(), 'get_claim', [claimId]), () =>
+    readClient.readContract({
+      address,
+      functionName: 'get_claim',
+      args: [claimId],
+    })
+  );
 
   return parseClaimRecordJson(result);
 }
@@ -310,11 +330,14 @@ export async function fetchAssessment(assessmentId: bigint): Promise<AssessmentR
     throw new Error('Contract address is not configured.');
   }
 
-  const result = await readClient.readContract({
-    address: contractConfig.address,
-    functionName: 'get_assessment',
-    args: [assessmentId],
-  });
+  const address = contractConfig.address;
+  const result = await dedupeInFlightRead(readKey(address.toLowerCase(), 'get_assessment', [assessmentId]), () =>
+    readClient.readContract({
+      address,
+      functionName: 'get_assessment',
+      args: [assessmentId],
+    })
+  );
 
   return parseAssessmentRecordJson(result);
 }
@@ -324,11 +347,14 @@ export async function fetchLatestAssessment(claimId: bigint): Promise<LatestAsse
     throw new Error('Contract address is not configured.');
   }
 
-  const result = await readClient.readContract({
-    address: contractConfig.address,
-    functionName: 'get_latest_assessment',
-    args: [claimId],
-  });
+  const address = contractConfig.address;
+  const result = await dedupeInFlightRead(readKey(address.toLowerCase(), 'get_latest_assessment', [claimId]), () =>
+    readClient.readContract({
+      address,
+      functionName: 'get_latest_assessment',
+      args: [claimId],
+    })
+  );
 
   return parseLatestAssessmentJson(result);
 }
@@ -342,11 +368,14 @@ export async function fetchClaimAssessments(
     throw new Error('Contract address is not configured.');
   }
 
-  const result = await readClient.readContract({
-    address: contractConfig.address,
-    functionName: 'get_claim_assessments',
-    args: [claimId, cursor, limit],
-  });
+  const address = contractConfig.address;
+  const result = await dedupeInFlightRead(readKey(address.toLowerCase(), 'get_claim_assessments', [claimId, cursor, limit]), () =>
+    readClient.readContract({
+      address,
+      functionName: 'get_claim_assessments',
+      args: [claimId, cursor, limit],
+    })
+  );
 
   return parsePaginatedAssessmentsJson(result);
 }
@@ -359,11 +388,14 @@ export async function fetchClaims(
     throw new Error('Contract address is not configured.');
   }
 
-  const result = await readClient.readContract({
-    address: contractConfig.address,
-    functionName: 'get_claims',
-    args: [cursor, limit],
-  });
+  const address = contractConfig.address;
+  const result = await dedupeInFlightRead(readKey(address.toLowerCase(), 'get_claims', [cursor, limit]), () =>
+    readClient.readContract({
+      address,
+      functionName: 'get_claims',
+      args: [cursor, limit],
+    })
+  );
 
   return parsePaginatedClaimsJson(result);
 }
