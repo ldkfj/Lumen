@@ -5,7 +5,7 @@ Lumen targets GenLayer Studio Devnet (`studio-dev`), chain ID `61997`.
 ## Release binding
 
 - Functional source commit: `69c1084a51902ba2e1f15e50370283e0358e8c57`
-- Public-source manifest SHA-256: updated after this evidence-only revision is committed.
+- Public-source manifest SHA-256: `d8e86425cd9a5e1d82d026e6e1c86b8d105ca214185fc40a11a320d319cd009e`
 - Manifest scope: all 36 tracked judge-facing Git blob bytes at the reviewed source commit except this self-referential verification document; entries are sorted as `path=lowercase_blob_sha256`, LF-joined with a final LF, then SHA-256 hashed.
 - Live web URL: https://lumen-navy-three.vercel.app
 
