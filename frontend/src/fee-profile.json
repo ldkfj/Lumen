@@ -1,0 +1,16 @@
+{
+  "network": "studio-dev",
+  "chainId": 61997,
+  "contractAddress": "0x1c955908BFE8E157F5a78131E8D04654eD3EA6E8",
+  "methods": {
+    "register_claim": {
+      "executionBudgetPerRound": "157620900000000"
+    },
+    "assess_claim": {
+      "executionBudgetPerRound": "155153100000000"
+    },
+    "request_reassessment": {
+      "executionBudgetPerRound": "157620900000000"
+    }
+  }
+}
