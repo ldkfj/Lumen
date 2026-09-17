@@ -1343,7 +1343,6 @@ export function NotFoundPage() {
 
 // --- Main Application Shell ---
 export function MainApp() {
-  const location = useLocation();
   const [claims, setClaims] = useState<ClaimRecord[]>([]);
   const [latestAssessments, setLatestAssessments] = useState<Map<string, LatestAssessmentResponse>>(new Map());
   const [nextCursor, setNextCursor] = useState<string | null>(null);
@@ -1487,10 +1486,6 @@ export function MainApp() {
             </div>
           </div>
         )}
-        {!/^\/app\/claims\/[^/]+$/.test(location.pathname) && (
-          <TransactionProgress stage={resumeStage} error={resumeError} hash={resumeHash} />
-        )}
-
         <Routes>
           <Route
             path="/app"
