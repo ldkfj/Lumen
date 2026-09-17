@@ -4,10 +4,10 @@ Lumen targets GenLayer Studio Devnet (`studio-dev`), chain ID `61997`.
 
 ## Release binding
 
-- Reviewed source commit: `d0d4fbe380c5a1274d5cb97c514b17607bd041e4`
-- Public-source manifest SHA-256: `525e16039fb58fc227d920b7a281756747a0e9c746a9e01c9a83a05891cf23b0`
+- Functional source commit: `69c1084a51902ba2e1f15e50370283e0358e8c57`
+- Public-source manifest SHA-256: updated after this evidence-only revision is committed.
 - Manifest scope: all 36 tracked judge-facing Git blob bytes at the reviewed source commit except this self-referential verification document; entries are sorted as `path=lowercase_blob_sha256`, LF-joined with a final LF, then SHA-256 hashed.
-- Live web URL: pending production deployment and verification; no URL is claimed yet.
+- Live web URL: https://lumen-navy-three.vercel.app
 
 ## Toolchain and automated checks
 
@@ -35,7 +35,7 @@ GENVM_VERSION=v0.6.0-rc5 PYTHONUTF8=1 uv run --with genlayer-test==0.30.0rc2 --w
 2 passed
 
 cd frontend && npm test -- --run
-56 passed
+62 passed
 
 cd frontend && npm run typecheck
 PASS
@@ -69,7 +69,8 @@ The contract exposes 3 writes and 5 views. It is intentionally frozen: there is 
 - Deployed source bytes exactly matched `contracts/lumen.py`, SHA-256 `f38fbf27fb71d01d7f11c682c84ee1d4c84ae8b33d07d803141d5b022d5232d5`.
 - Registration transaction `0x780c890436022f8e7876d3bfc6053bb918a43e325ea85b43276aed4aabe0dd79` finalized successfully; authoritative readback returned claim `1` with its bound source, commit, byte range, row fingerprint, and MLPerf fields.
 - Assessment transaction `0x9081e0b5ac6c3de42a27e3123273c18e4d6781d0140ddf01f5e87928c85eee45` finalized successfully; authoritative readback returned assessment `1` with outcome `UNRESOLVED`, incompatible-scope mask `217`, and uncertainty mask `38`.
-- Latest attempt is assessment `1`; latest resolved remains unset, as required for an unresolved assessment.
+- Production frontend assessment transaction `0x485f04dce468a2845c80ecf105b64e8e30d2d7a28b2b6ee3077025bcea648fd0` completed through explicit provider selection, wallet signature, pending/finality display, execution verification, authoritative readback, and reconciliation. The application displayed `SUCCESS` only after `FINALIZED`, `MAJORITY_AGREE`, `FINISHED_WITH_RETURN`, sender/target binding, and assessment `4` readback were verified.
+- Latest attempt is assessment `4`; latest resolved remains unset, as required for unresolved assessments.
 
 ### Live proof matrix
 
@@ -78,9 +79,10 @@ The contract exposes 3 writes and 5 views. It is intentionally frozen: there is 
 | Deploy contract | `0x5b9eb7423fbb3a40130faa1832c398c08f33f55d022aa785077f5a4b9feae6c6` | `FINALIZED` / `MAJORITY_AGREE` / `FINISHED_WITH_RETURN` | Exact deployed source bytes and contract address |
 | Register claim | `0x780c890436022f8e7876d3bfc6053bb918a43e325ea85b43276aed4aabe0dd79` | `FINALIZED` / `MAJORITY_AGREE` / `FINISHED_WITH_RETURN` | Claim `1` with exact evidence binding |
 | Assess claim | `0x9081e0b5ac6c3de42a27e3123273c18e4d6781d0140ddf01f5e87928c85eee45` | `FINALIZED` / `MAJORITY_AGREE` / `FINISHED_WITH_RETURN` | Assessment `1`, `UNRESOLVED`, masks `217` and `38` |
+| Production frontend assessment | `0x485f04dce468a2845c80ecf105b64e8e30d2d7a28b2b6ee3077025bcea648fd0` | `FINALIZED` / `MAJORITY_AGREE` / `FINISHED_WITH_RETURN` | Assessment `4`, `UNRESOLVED`, assessor `0x00870443049cb1d4a9a0f51913885433c701e01f` |
 | Request reassessment | Not executed | No strictly newer official commit existed | Guarded path remains covered by automated tests; no live-success claim |
 
-The live writes above establish contract behavior on Studio Devnet. A production frontend-originated journey is intentionally not claimed before web deployment and will be verified against the deployed application.
+The production journey also verified direct action-to-wallet flow, one transaction-status slot beside the action history, transaction-hash copy and Explorer links, durable pending-state recovery, reload, explicit provider re-selection, and readback without a second submission.
 
 ## Release fee profile
 
@@ -91,5 +93,4 @@ The frontend fee profile is bound to chain `61997` and the exact contract addres
 - V1 supports only MLPerf Inference v6.0 in the fixed official repository.
 - The verified assessment is `UNRESOLVED`; no supported or favorable verdict is claimed.
 - No valid live reassessment was possible because the official repository had no strictly newer commit.
-- The production frontend URL and production-originated E2E evidence are not yet available.
 - The intentionally frozen contract cannot be upgraded in place.

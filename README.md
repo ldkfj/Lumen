@@ -10,8 +10,8 @@ Lumen does not rerun benchmarks, certify vendors, rank systems, or prove multi-r
 - [Deployment transaction](https://explorer-studio-dev.genlayer.com/tx/0x5b9eb7423fbb3a40130faa1832c398c08f33f55d022aa785077f5a4b9feae6c6)
 - [Registration transaction](https://explorer-studio-dev.genlayer.com/tx/0x780c890436022f8e7876d3bfc6053bb918a43e325ea85b43276aed4aabe0dd79)
 - [Assessment transaction](https://explorer-studio-dev.genlayer.com/tx/0x9081e0b5ac6c3de42a27e3123273c18e4d6781d0140ddf01f5e87928c85eee45)
-
-The public web link is added only after the production deployment is verified.
+- [Production frontend assessment](https://explorer-studio-dev.genlayer.com/tx/0x485f04dce468a2845c80ecf105b64e8e30d2d7a28b2b6ee3077025bcea648fd0)
+- [Live application](https://lumen-navy-three.vercel.app)
 
 ## Trust problem
 
@@ -82,7 +82,7 @@ The application fails closed until `VITE_CONTRACT_ADDRESS` is set. No placeholde
 
 ## Tests and verification
 
-The verified release passed contract lint and schema validation, 10 deterministic contract tests, 2 Direct Mode tests, 56 frontend tests, TypeScript checking, production build, and production dependency audit. Exact commands, results, deployed-source parity, and live write/readback evidence are in [`docs/VERIFICATION.md`](docs/VERIFICATION.md).
+The verified release passed contract lint and schema validation, 10 deterministic contract tests, 2 Direct Mode tests, 62 frontend tests, TypeScript checking, production build, and production dependency audit. Exact commands, results, deployed-source parity, and live write/readback evidence are in [`docs/VERIFICATION.md`](docs/VERIFICATION.md).
 
 ## Deployment
 
